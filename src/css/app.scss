@@ -2,3 +2,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  @apply bg-amber-100 text-gray-800;
+
+  header {
+    @apply bg-orange-300 text-gray-800 !important;
+  }
+
+  .q-drawer {
+    @apply bg-orange-300 text-gray-800 !important;
+  }
+
+
+}
+
+.body--dark {
+  @apply bg-gray-800 text-amber-100 !important;
+
+  header {
+    @apply bg-gray-900 text-amber-100 !important;
+  }
+
+  .q-drawer {
+    @apply bg-gray-900 text-amber-100 !important;
+
+    .q-item--dark {
+      @apply text-amber-100 !important;
+    }
+  }
+
+  .q-btn {
+    @apply bg-gray-900;
+  }
+}
