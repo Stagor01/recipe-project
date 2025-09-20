@@ -12,6 +12,10 @@ body {
 
   .q-drawer {
     @apply bg-orange-300 text-gray-800 !important;
+
+    .q-router-link--active {
+      @apply text-amber-100 !important;
+    }
   }
 
 
@@ -27,8 +31,14 @@ body {
   .q-drawer {
     @apply bg-gray-900 text-amber-100 !important;
 
-    .q-item--dark {
-      @apply text-amber-100 !important;
+    .q-item {
+      &--dark {
+        @apply text-amber-100 !important;
+      }
+    }
+
+    .q-router-link--active {
+      @apply text-orange-300 !important;
     }
   }
 

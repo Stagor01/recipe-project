@@ -1,11 +1,9 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="">
+  <q-layout :view="isDesktop ? 'LHh Lpr lff' : 'hHh lpr lff'">
+    <q-header elevated>
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title> Quasar App </q-toolbar-title>
-
+        <q-toolbar-title>Recipe App</q-toolbar-title>
         <q-btn
           flat
           :icon="$q.dark.isActive ? 'light_mode' : 'dark_mode'"
@@ -14,11 +12,26 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      :mini="isLeftDrawerMini"
+      :mini-width="68"
+      :width="280"
+      behavior="desktop"
+      show-if-above
+      bordered
+    >
       <q-list>
-        <q-item-label header> Essential Links </q-item-label>
+        <q-item-label header>Navigation</q-item-label>
 
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+        <MenuItemsRoutes
+          v-for="item in menuItems"
+          :key="item.label"
+          :label="item.label"
+          :caption="item.caption"
+          :icon="item.icon"
+          :to="item.to"
+        />
       </q-list>
     </q-drawer>
 
@@ -30,30 +43,43 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import { useQuasar } from 'quasar';
+import MenuItemsRoutes from 'components/MenuItemsRoutes.vue';
+import { useMediaBreakpoints } from 'src/composables';
+import type { MenuItem } from 'src/types';
 
-const linksList: EssentialLinkProps[] = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-];
+const $q = useQuasar();
+const { isDesktop } = useMediaBreakpoints();
 
 const leftDrawerOpen = ref(false);
+const isLeftDrawerMini = ref(false);
+
+const menuItems: MenuItem[] = [
+  {
+    label: 'Home',
+    caption: 'Main page',
+    icon: 'home',
+    to: '/',
+  },
+  {
+    label: 'Recipes',
+    caption: 'Recipes database',
+    icon: 'restaurant_menu',
+    to: '/recipes',
+  },
+  {
+    label: 'Calculator',
+    caption: 'Product calculator',
+    icon: 'calculate',
+    to: '/calculator',
+  },
+  {
+    label: 'Fridge',
+    caption: 'What is in the fridge?',
+    icon: 'kitchen',
+    to: '/fridge',
+  },
+];
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
