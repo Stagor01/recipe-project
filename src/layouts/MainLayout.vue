@@ -1,10 +1,20 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated class="">
+  <q-layout :view="isDesktop ? 'LHh Lpr lff' : 'hHh lpr lff'">
+    <q-header elevated>
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title>Recipe App</q-toolbar-title>
+
+        <q-btn
+          flat
+          :icon="currentLocale === 'en-US' ? 'outlined_flag' : 'flag'"
+          @click="toggleLocale"
+        >
+          <q-tooltip>
+            {{ currentLocale === 'en-US' ? 'Переключить на русский' : 'Switch to English' }}
+          </q-tooltip>
+        </q-btn>
 
         <q-btn
           flat
@@ -14,11 +24,26 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer
+      v-model="leftDrawerOpen"
+      :mini="isLeftDrawerMini"
+      :mini-width="68"
+      :width="280"
+      behavior="desktop"
+      show-if-above
+      bordered
+    >
       <q-list>
-        <q-item-label header> Essential Links </q-item-label>
+        <q-item-label header>Navigation</q-item-label>
 
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+        <MenuItemsRoutes
+          v-for="item in menuItems"
+          :key="item.label"
+          :label="item.label"
+          :caption="item.caption"
+          :icon="item.icon"
+          :to="item.to"
+        />
       </q-list>
     </q-drawer>
 
@@ -29,33 +54,56 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink.vue';
+import { computed, ref } from 'vue';
+import { useQuasar } from 'quasar';
+import MenuItemsRoutes from 'components/MenuItemsRoutes.vue';
+import { useMediaBreakpoints } from 'src/composables';
+import type { MenuItem } from 'src/types';
+import { useI18n } from 'vue-i18n';
 
-const linksList: EssentialLinkProps[] = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-];
+const $q = useQuasar();
+const { isDesktop } = useMediaBreakpoints();
+const { locale, t } = useI18n();
+
+const currentLocale = computed(() => locale.value);
 
 const leftDrawerOpen = ref(false);
+const isLeftDrawerMini = ref(false);
+
+const menuItems = computed<MenuItem[]>(() => [
+  {
+    label: `${t('menu.labels.home')}`,
+    caption: `${t('menu.captions.home')}`,
+    icon: 'home',
+    to: '/',
+  },
+  {
+    label: `${t('menu.labels.recipes')}`,
+    caption: `${t('menu.captions.recipes')}`,
+    icon: 'restaurant_menu',
+    to: '/recipes',
+  },
+  {
+    label: `${t('menu.labels.calculator')}`,
+    caption: `${t('menu.captions.recipes')}`,
+    icon: 'calculate',
+    to: '/calculator',
+  },
+  {
+    label: `${t('menu.labels.fridge')}`,
+    caption: `${t('menu.captions.fridge')}`,
+    icon: 'kitchen',
+    to: '/fridge',
+  },
+]);
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
+}
+
+function toggleLocale() {
+  locale.value = locale.value === 'en-US' ? 'ru-RU' : 'en-US';
+
+  localStorage.setItem('user-locale', locale.value);
 }
 </script>
