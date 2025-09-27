@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  bff:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ../packages/bff:/app
+    command: ["node", "src/index.js"]
+    ports:
+      - "4000:4000"
+    networks:
+      - lipa-network
+
+  auth:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ../packages/auth:/app
+    command: ["node", "src/index.js"]
+    ports:
+      - "4001:4001"
+    networks:
+      - lipa-network
+
+networks:
+  lipa-network:
+    driver: bridge
