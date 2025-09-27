@@ -1,43 +1,13 @@
-# recipe-project (recipe-project)
+# Lipa Recipes (monorepo)
 
-Applications for various operations with food recipes
+Структура:
+- `packages/frontend` — фронтенд (Vue 3 + Quasar + Tailwind + TS)
+- `packages/bff` — BFF (Node.js + TS)
+- `packages/auth` — auth-сервис
+- `infra` — docker-compose, инфраструктура
 
-## Install the dependencies
+## Запуск
 
+Установка зависимостей:
 ```bash
-yarn
-# or
-npm install
-```
-
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-
-```bash
-quasar dev
-```
-
-### Lint the files
-
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-### Format the files
-
-```bash
-yarn format
-# or
-npm run format
-```
-
-### Build the app for production
-
-```bash
-quasar build
-```
-
-### Customize the configuration
-
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+yarn install
