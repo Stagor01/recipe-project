@@ -1,3 +1,11 @@
 {
-  "extends": "./.quasar/tsconfig.json"
+  "extends": "./.quasar/tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "quasar.config.*",
+    "src-env/*"
+  ]
 }
