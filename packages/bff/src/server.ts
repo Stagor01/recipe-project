@@ -3,13 +3,14 @@ import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import recipeRoutes from "./routes/recipes";
 import { ZodError } from "zod";
+import "dotenv/config";
 
 const app = Fastify({ logger: true });
 
 app.register(cors, { origin: true });
 app.register(multipart);
 
-app.register(recipeRoutes, { prefix: "/recipes" });
+app.register(recipeRoutes, { prefix: "/api/recipes" });
 
 app.setErrorHandler((error, request, reply) => {
   app.log.error(error);
