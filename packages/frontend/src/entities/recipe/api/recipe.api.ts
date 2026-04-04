@@ -1,20 +1,21 @@
 import { api } from 'boot/axios';
+import type { CreateRecipeDto, Recipe, UpdateRecipeDto } from 'src/types/models';
 
 export const recipeApi = {
-  getAll(params?: { page?: number; limit?: number }) {
-    return api.get('/recipes', { params });
+  getAll() {
+    return api.get<Recipe[]>('/recipes');
   },
 
   getById(id: string) {
-    return api.get(`/recipes/${id}`);
+    return api.get<Recipe>(`/recipes/${id}`);
   },
 
-  create(data: any) {
-    return api.post('/recipes', data);
+  create(data: CreateRecipeDto) {
+    return api.post<Recipe>('/recipes', data);
   },
 
-  update(id: string, data: any) {
-    return api.put(`/recipes/${id}`, data);
+  update(id: string, data: UpdateRecipeDto) {
+    return api.put<Recipe>(`/recipes/${id}`, data);
   },
 
   delete(id: string) {
