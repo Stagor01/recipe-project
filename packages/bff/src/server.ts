@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
 import recipeRoutes from "./routes/recipes";
+import metaRoutes from "./routes/meta";
 import { ZodError } from "zod";
 import "dotenv/config";
 
@@ -11,6 +12,7 @@ app.register(cors, { origin: true });
 app.register(multipart);
 
 app.register(recipeRoutes, { prefix: "/api/recipes" });
+app.register(metaRoutes, { prefix: "/api" });
 
 app.setErrorHandler((error, request, reply) => {
   app.log.error(error);

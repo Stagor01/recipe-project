@@ -12,14 +12,52 @@ model Recipe {
   title       String
   description String
   imageUrl    String?
-  ingredients Ingredient[]
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  ingredients RecipeIngredient[]
+  tags        RecipeTag[]
 }
 
 model Ingredient {
-  id        String  @id @default(uuid())
-  name      String
-  recipe    Recipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  recipeId  String
+  id   String @id @default(uuid())
+  name String @unique
+  unit  String?
+  recipes RecipeIngredient[]
+}
+
+model RecipeIngredient {
+  id           String @id @default(uuid())
+  recipeId     String
+  ingredientId String
+  amount       Float
+  unit         String
+
+  recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+}
+
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+
+  recipes Recipe[]
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+
+  recipes RecipeTag[]
+}
+
+model RecipeTag {
+  id       String @id @default(uuid())
+  recipeId String
+  tagId    String
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id])
 }
