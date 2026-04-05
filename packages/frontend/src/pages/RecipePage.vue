@@ -26,6 +26,8 @@
         </q-card-section>
       </q-card>
     </div>
+
+    <q-btn icon="add" class="absolute-bottom-right q-mb-md q-mr-md" round size="xl" />
   </q-page>
 </template>
 
