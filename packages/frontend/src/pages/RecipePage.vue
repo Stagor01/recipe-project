@@ -137,7 +137,7 @@
 
         <q-card-actions align="right">
           <q-btn flat :label="t('common.cancel')" color="primary" v-close-popup />
-          <q-btn flat :label="t('common.add')" color="primary" v-close-popup />
+          <q-btn flat :label="t('common.add')" color="primary" @click="onSubmit" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -151,14 +151,15 @@ import { chipColors } from 'src/consts';
 import { useI18n } from 'vue-i18n';
 import { useMetaStore } from 'stores/meta-store';
 import { storeToRefs } from 'pinia';
-import type { Ingredient, Tag } from 'src/types/models';
+import type { CreateRecipeDto, Ingredient, Tag } from 'src/types/models';
 import type { IngredientFormItem } from 'src/types';
 // import { useQuasar } from 'quasar';
 // import { RecipeAddDialog } from 'components/recipes';
 
 const store = recipesInfoStore();
 const metaStore = useMetaStore();
-const { recipes, fetchRecipes } = store;
+const { recipes } = storeToRefs(store);
+const { fetchRecipes, createRecipe } = store;
 const { categories, tags, ingredients } = storeToRefs(metaStore);
 const { fetchCategories, fetchTags, fetchIngredients } = metaStore;
 const { t } = useI18n();
@@ -247,6 +248,44 @@ const getAmountLabelKey = (id: string | null) => {
       return 'volume';
     default:
       return 'quantity';
+  }
+};
+
+const buildPayload = (): CreateRecipeDto => {
+  return {
+    title: recipeTitle.value,
+    description: recipeDescription.value,
+
+    ...(imageUrl.value && { imageUrl: imageUrl.value }),
+    ...(selectedCategoryId.value && { categoryId: selectedCategoryId.value }),
+    ...(selectedTagIds.value.length && { tagIds: selectedTagIds.value }),
+
+    ingredients: ingredientsForm.value
+      .filter((item) => item.ingredientId && item.amount)
+      .map((item) => ({
+        ingredientId: item.ingredientId as string,
+        amount: item.amount as number,
+        unit: getUnitById(item.ingredientId),
+      })),
+  };
+};
+
+const onSubmit = async () => {
+  try {
+    const payload = buildPayload();
+
+    await createRecipe(payload);
+
+    add.value = false;
+
+    imageUrl.value = '';
+    recipeTitle.value = '';
+    recipeDescription.value = '';
+    selectedCategoryId.value = null;
+    selectedTagIds.value = [];
+    ingredientsForm.value = [{ ingredientId: null, amount: null, unit: null }];
+  } catch (e) {
+    console.error(e);
   }
 };
 
