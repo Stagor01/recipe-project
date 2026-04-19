@@ -90,41 +90,48 @@
             @filter="filterTag"
           />
 
-          <div class="ingredient-fields">
-            <div
-              v-for="(item, index) in ingredientsForm"
-              :key="index"
-              class="row items-center q-gutter-sm q-mb-sm"
-            >
-              <q-select
-                v-model="item.ingredientId"
-                :options="filteredIngredients"
-                option-label="name"
-                option-value="id"
-                emit-value
-                map-options
-                use-input
-                fill-input
-                hide-selected
-                clearable
-                :label="t('ingredient')"
-                class="col"
-                @filter="filterIngredient"
-              />
+          <div
+            v-for="(item, index) in ingredientsForm"
+            :key="index"
+            class="ingredient-fields row items-center q-gutter-sm q-mb-sm"
+          >
+            <q-select
+              v-model="item.ingredientId"
+              :options="filteredIngredients"
+              option-label="name"
+              option-value="id"
+              emit-value
+              map-options
+              use-input
+              class="ingredient-select col"
+              fill-input
+              hide-selected
+              clearable
+              :label="t('recipePage.dialogs.addRecipe.labels.ingredient')"
+              @filter="filterIngredient"
+            />
+            <q-input
+              v-model.number="item.amount"
+              type="number"
+              :label="
+                t(`recipePage.dialogs.addRecipe.labels.${getAmountLabelKey(item.ingredientId)}`)
+              "
+              class="col-2"
+            />
 
-              <q-input
-                v-model.number="item.amount"
-                type="number"
-                :label="t('amount')"
-                class="col-2"
-              />
+            <span class="col-1 text-grey">
+              {{ getUnitById(item.ingredientId) }}
+            </span>
 
-              <span class="col-1 text-grey">
-                {{ getUnitById(item.ingredientId) }}
-              </span>
+            <q-btn icon="add" flat round @click="addIngredientRow" />
 
-              <q-btn icon="add" flat round @click="addIngredientRow" />
-            </div>
+            <q-btn
+              icon="delete"
+              flat
+              round
+              :disable="ingredientsForm.length === 1"
+              @click="deleteIngredientRow(index)"
+            />
           </div>
         </q-card-section>
 
@@ -215,11 +222,32 @@ const addIngredientRow = () => {
   });
 };
 
+const deleteIngredientRow = (index: number) => {
+  if (ingredientsForm.value.length === 1) return;
+
+  ingredientsForm.value.splice(index, 1);
+};
+
 const getUnitById = (id: string | null) => {
   if (!id) return '';
 
   const ingredient = ingredients.value.find((i) => i.id === id);
   return ingredient?.unit || '';
+};
+
+const getAmountLabelKey = (id: string | null) => {
+  if (!id) return 'quantity';
+
+  const unit = getUnitById(id);
+
+  switch (unit) {
+    case 'г':
+      return 'weight';
+    case 'мл':
+      return 'volume';
+    default:
+      return 'quantity';
+  }
 };
 
 // const onAddDialog = () => {
@@ -271,6 +299,17 @@ onMounted(async () => {
 
   @media (min-width: 1024px) {
     min-width: 740px;
+  }
+}
+
+.ingredient-fields {
+  .ingredient-select {
+  }
+
+  .ingredient-amount {
+  }
+
+  .ingredient-actions {
   }
 }
 </style>

@@ -9,6 +9,10 @@ export default {
           description: 'Описание рецепта',
           category: 'Категория блюда',
           tags: 'Теги блюда',
+          ingredient: 'Ингредиент',
+          weight: 'Вес',
+          volume: 'Объем',
+          quantity: 'Количество',
         },
         placeholders: {
           imageUrl: 'Введите URL изображения блюда',
