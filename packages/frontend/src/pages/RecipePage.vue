@@ -89,6 +89,43 @@
             :label="t('recipePage.dialogs.addRecipe.labels.tags')"
             @filter="filterTag"
           />
+
+          <div class="ingredient-fields">
+            <div
+              v-for="(item, index) in ingredientsForm"
+              :key="index"
+              class="row items-center q-gutter-sm q-mb-sm"
+            >
+              <q-select
+                v-model="item.ingredientId"
+                :options="filteredIngredients"
+                option-label="name"
+                option-value="id"
+                emit-value
+                map-options
+                use-input
+                fill-input
+                hide-selected
+                clearable
+                :label="t('ingredient')"
+                class="col"
+                @filter="filterIngredient"
+              />
+
+              <q-input
+                v-model.number="item.amount"
+                type="number"
+                :label="t('amount')"
+                class="col-2"
+              />
+
+              <span class="col-1 text-grey">
+                {{ getUnitById(item.ingredientId) }}
+              </span>
+
+              <q-btn icon="add" flat round @click="addIngredientRow" />
+            </div>
+          </div>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -107,15 +144,16 @@ import { chipColors } from 'src/consts';
 import { useI18n } from 'vue-i18n';
 import { useMetaStore } from 'stores/meta-store';
 import { storeToRefs } from 'pinia';
-import type { Tag } from 'src/types/models';
+import type { Ingredient, Tag } from 'src/types/models';
+import type { IngredientFormItem } from 'src/types';
 // import { useQuasar } from 'quasar';
 // import { RecipeAddDialog } from 'components/recipes';
 
 const store = recipesInfoStore();
 const metaStore = useMetaStore();
 const { recipes, fetchRecipes } = store;
-const { categories, tags } = storeToRefs(metaStore);
-const { fetchCategories, fetchTags } = metaStore;
+const { categories, tags, ingredients } = storeToRefs(metaStore);
+const { fetchCategories, fetchTags, fetchIngredients } = metaStore;
 const { t } = useI18n();
 // const q = useQuasar();
 
@@ -127,6 +165,15 @@ const selectedCategoryId = ref<string | null>(null);
 const selectedTagIds = ref<string[]>([]);
 
 const filteredTags = ref<Tag[]>([]);
+const filteredIngredients = ref<Ingredient[]>([]);
+
+const ingredientsForm = ref<IngredientFormItem[]>([
+  {
+    ingredientId: null,
+    amount: null,
+    unit: null,
+  },
+]);
 
 const placeholderImage = 'https://via.placeholder.com/400x200.png?text=No+Image';
 
@@ -145,6 +192,36 @@ const filterTag = (val: string, update: (fn: () => void) => void) => {
   });
 };
 
+const filterIngredient = (val: string, update: (fn: () => void) => void) => {
+  update(() => {
+    if (!val) {
+      filteredIngredients.value = ingredients.value;
+      return;
+    }
+
+    const needle = val.toLowerCase();
+
+    filteredIngredients.value = ingredients.value.filter((i) =>
+      i.name.toLowerCase().includes(needle),
+    );
+  });
+};
+
+const addIngredientRow = () => {
+  ingredientsForm.value.push({
+    ingredientId: null,
+    amount: null,
+    unit: null,
+  });
+};
+
+const getUnitById = (id: string | null) => {
+  if (!id) return '';
+
+  const ingredient = ingredients.value.find((i) => i.id === id);
+  return ingredient?.unit || '';
+};
+
 // const onAddDialog = () => {
 //   q.dialog({
 //     component: RecipeAddDialog,
@@ -154,6 +231,7 @@ onMounted(async () => {
   await fetchRecipes();
   await fetchCategories();
   await fetchTags();
+  await fetchIngredients();
 
   filteredTags.value = tags.value;
 });

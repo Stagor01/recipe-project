@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { Category, Tag } from 'src/types/models';
+import type { Category, Ingredient, Tag } from 'src/types/models';
 import { metaApi } from 'src/entities/recipe/api/meta.api';
 
 export const useMetaStore = defineStore('meta', () => {
@@ -8,6 +8,7 @@ export const useMetaStore = defineStore('meta', () => {
 
   const categories = ref<Category[]>([]);
   const tags = ref<Tag[]>([]);
+  const ingredients = ref<Ingredient[]>([]);
 
   const fetchCategories = async () => {
     loading.value = true;
@@ -29,11 +30,23 @@ export const useMetaStore = defineStore('meta', () => {
     }
   };
 
+  const fetchIngredients = async () => {
+    loading.value = true;
+    try {
+      const { data } = await metaApi.getIngredients();
+      ingredients.value = data;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     categories,
     tags,
+    ingredients,
     loading,
     fetchCategories,
     fetchTags,
+    fetchIngredients,
   };
 });
