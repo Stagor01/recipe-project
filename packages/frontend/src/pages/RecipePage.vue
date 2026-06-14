@@ -4,13 +4,9 @@
       <RecipeCard v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" />
     </div>
 
-    <q-btn
-      icon="add"
-      class="absolute-bottom-right q-mb-md q-mr-md"
-      round
-      size="xl"
-      @click="addDialog = true"
-    />
+    <q-page-sticky position="bottom-right" :offset="[24, 24]">
+      <q-btn icon="add" round size="xl" @click="addDialog = true" />
+    </q-page-sticky>
 
     <RecipesAddDialog v-model="addDialog" @created="fetchRecipes" />
   </q-page>

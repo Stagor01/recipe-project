@@ -11,3 +11,5 @@ export const chipColors: Array<string> = [
   'purple',
   'orange',
 ];
+
+export const TAG_LIMIT = 1;
