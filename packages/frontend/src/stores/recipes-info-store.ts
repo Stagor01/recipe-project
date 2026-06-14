@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { recipeApi } from 'src/entities/recipe/api/recipe.api';
-import type { Recipe } from 'src/types/models';
+import type { CreateRecipeDto, Recipe } from 'src/types/models';
 
 export const recipesInfoStore = defineStore('recipes', () => {
   const recipes = ref<Array<Recipe>>([]);
@@ -20,9 +20,23 @@ export const recipesInfoStore = defineStore('recipes', () => {
     }
   };
 
+  const createRecipe = async (payload: CreateRecipeDto) => {
+    loading.value = true;
+    try {
+      const { data } = await recipeApi.create(payload);
+
+      recipes.value.unshift(data);
+
+      return data;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     recipes,
     loading,
     fetchRecipes,
+    createRecipe,
   };
 });

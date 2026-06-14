@@ -3,5 +3,6 @@ export default {
     noData: 'Нет данных',
     confirm: 'Подтвердить',
     cancel: 'Отменить',
+    add: 'Добавить',
   },
 };
