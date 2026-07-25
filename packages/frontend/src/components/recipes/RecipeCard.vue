@@ -1,5 +1,5 @@
 <template>
-  <q-card>
+  <q-card class="cursor-pointer" @click="emit('click', recipe.id)">
     <img :src="recipe.imageUrl || placeholderImage" />
 
     <q-card-section>
@@ -45,6 +45,10 @@ import type { Recipe } from 'src/types/models';
 
 const props = defineProps<{
   recipe: Recipe;
+}>();
+
+const emit = defineEmits<{
+  (e: 'click', recipeId: string): void;
 }>();
 
 const placeholderImage = 'https://via.placeholder.com/400x200.png?text=No+Image';

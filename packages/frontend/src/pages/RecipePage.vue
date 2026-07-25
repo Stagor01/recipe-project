@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div class="recipe-cards p-4">
-      <RecipeCard v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" />
+      <RecipeCard v-for="recipe in recipes" :key="recipe.id" :recipe="recipe" @click="openRecipe" />
     </div>
 
     <q-page-sticky position="bottom-right" :offset="[24, 24]">
@@ -9,6 +9,12 @@
     </q-page-sticky>
 
     <RecipesAddDialog v-model="addDialog" @created="fetchRecipes" />
+
+    <RecipeDetailsDialog
+      v-model="detailsDialog"
+      :recipe-id="selectedRecipeId"
+      @updated="fetchRecipes"
+    />
   </q-page>
 </template>
 
@@ -16,7 +22,7 @@
 import { ref, onMounted } from 'vue';
 import { recipesInfoStore } from 'stores/recipes-info-store';
 import { storeToRefs } from 'pinia';
-import { RecipeCard, RecipesAddDialog } from 'components/recipes';
+import { RecipeCard, RecipeDetailsDialog, RecipesAddDialog } from 'components/recipes';
 
 const store = recipesInfoStore();
 
@@ -24,6 +30,16 @@ const { recipes } = storeToRefs(store);
 const { fetchRecipes } = store;
 
 const addDialog = ref(false);
+
+const detailsDialog = ref(false);
+
+const selectedRecipeId = ref<string | null>(null);
+
+const openRecipe = (recipeId: string) => {
+  selectedRecipeId.value = recipeId;
+
+  detailsDialog.value = true;
+};
 
 onMounted(fetchRecipes);
 </script>
