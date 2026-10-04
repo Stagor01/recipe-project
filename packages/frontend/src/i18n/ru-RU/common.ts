@@ -7,5 +7,6 @@ export default {
     close: 'Закрыть',
     edit: 'Редактировать',
     delete: 'Удалить',
+    save: 'Сохранить',
   },
 };

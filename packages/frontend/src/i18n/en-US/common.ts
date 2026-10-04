@@ -7,5 +7,6 @@ export default {
     close: 'Close',
     edit: 'Edit',
     delete: 'Delete',
+    save: 'Save',
   },
 };
