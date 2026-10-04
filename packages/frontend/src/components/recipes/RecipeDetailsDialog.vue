@@ -11,117 +11,30 @@
         <q-btn icon="close" flat round dense size="md" @click="closeDialog" />
       </q-card-section>
 
-      <q-card-section class="fields-container">
-        <q-input
-          v-model="form.imageUrl"
-          :readonly="!isEditing"
-          :label="t('recipePage.dialogs.addRecipe.labels.imageUrl')"
-        />
+      <q-form ref="formRef" @submit.prevent="saveRecipe">
+        <RecipeForm v-model="form" :readonly="!isEditing" />
 
-        <q-input
-          v-model="form.title"
-          :readonly="!isEditing"
-          :label="t('recipePage.dialogs.addRecipe.labels.recipeTitle')"
-        />
-
-        <q-input
-          v-model="form.description"
-          type="textarea"
-          :readonly="!isEditing"
-          :label="t('recipePage.dialogs.addRecipe.labels.description')"
-        />
-
-        <q-select
-          v-model="form.categoryId"
-          :options="categories"
-          option-label="name"
-          option-value="id"
-          emit-value
-          map-options
-          clearable
-          :disable="!isEditing"
-          :label="t('recipePage.dialogs.addRecipe.labels.category')"
-        />
-
-        <q-select
-          v-model="form.tagIds"
-          :options="tags"
-          option-label="name"
-          option-value="id"
-          emit-value
-          map-options
-          multiple
-          use-input
-          :disable="!isEditing"
-          :label="t('recipePage.dialogs.addRecipe.labels.tags')"
-        />
-
-        <div
-          v-for="(item, index) in form.ingredients"
-          :key="index"
-          class="ingredient-fields row items-center q-gutter-sm q-mb-sm"
-        >
-          <q-select
-            v-model="item.ingredientId"
-            :options="ingredients"
-            option-label="name"
-            option-value="id"
-            emit-value
-            map-options
-            use-input
-            class="col"
-            :disable="!isEditing"
-            :label="t('recipePage.dialogs.addRecipe.labels.ingredient')"
-          />
-
-          <q-input
-            v-model.number="item.amount"
-            type="number"
-            class="col-2"
-            :readonly="!isEditing"
-            :label="
-              t(`recipePage.dialogs.addRecipe.labels.${getAmountLabelKey(item.ingredientId)}`)
-            "
-          />
-
-          <span class="col-1 text-grey">
-            {{ getUnitById(item.ingredientId) }}
-          </span>
-
-          <template v-if="isEditing">
-            <q-btn icon="add" flat round @click="addIngredientRow" />
-
+        <q-card-actions align="right">
+          <template v-if="!isEditing">
             <q-btn
-              icon="delete"
               flat
-              round
-              :disable="form.ingredients.length === 1"
-              @click="deleteIngredientRow(index)"
+              color="negative"
+              :label="t('common.delete')"
+              @click="deleteConfirmDialog = true"
             />
+
+            <q-btn flat color="primary" :label="t('common.edit')" @click="startEdit" />
+
+            <q-btn flat color="primary" :label="t('common.close')" @click="closeDialog" />
           </template>
-        </div>
-      </q-card-section>
 
-      <q-card-actions align="right">
-        <template v-if="!isEditing">
-          <q-btn
-            flat
-            color="negative"
-            :label="t('common.delete')"
-            @click="deleteConfirmDialog = true"
-          />
+          <template v-else>
+            <q-btn flat color="grey" :label="t('common.cancel')" @click="cancelEdit" />
 
-          <q-btn flat color="primary" :label="t('common.edit')" @click="startEdit" />
-
-          <q-btn flat color="primary" :label="t('common.close')" @click="closeDialog" />
-        </template>
-
-        <template v-else>
-          <q-btn flat color="grey" :label="t('common.cancel')" @click="cancelEdit" />
-
-          <q-btn flat color="positive" :label="t('common.save')" @click="saveRecipe" />
-        </template>
-      </q-card-actions>
+            <q-btn type="submit" flat color="positive" :label="t('common.save')" />
+          </template>
+        </q-card-actions>
+      </q-form>
     </q-card>
   </q-dialog>
 
@@ -129,14 +42,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { QForm } from 'quasar';
 
 import { recipesInfoStore } from 'stores/recipes-info-store';
-import { useMetaStore } from 'stores/meta-store';
-import RecipeDeleteConfirm from '../recipes/RecipeDeleteConfirm.vue';
-import type { RecipeForm } from 'src/types';
+
+import RecipeForm from './RecipeForm.vue';
+import RecipeDeleteConfirm from './RecipeDeleteConfirm.vue';
+
+import type { RecipeForm as RecipeFormType } from 'src/types';
 import type { Recipe, UpdateRecipeDto } from 'src/types/models';
 
 const props = defineProps<{
@@ -157,19 +72,16 @@ const dialogModel = computed({
 const { t } = useI18n();
 
 const recipesStore = recipesInfoStore();
-const metaStore = useMetaStore();
 
 const { fetchRecipe, updateRecipe, deleteRecipe } = recipesStore;
 
-const { categories, tags, ingredients } = storeToRefs(metaStore);
-
-const { fetchCategories, fetchTags, fetchIngredients } = metaStore;
-
 const recipe = ref<Recipe | null>(null);
 
-const form = ref<RecipeForm | null>(null);
+const form = ref<RecipeFormType | null>(null);
 
-const originalForm = ref<RecipeForm | null>(null);
+const originalForm = ref<RecipeFormType | null>(null);
+
+const formRef = ref<QForm | null>(null);
 
 const isEditing = ref(false);
 
@@ -180,33 +92,28 @@ const closeDialog = () => {
   dialogModel.value = false;
 };
 
-const cloneForm = (form: RecipeForm): RecipeForm => ({
-  title: form.title,
-  description: form.description,
-  imageUrl: form.imageUrl,
-  categoryId: form.categoryId,
-  tagIds: [...form.tagIds],
-  ingredients: form.ingredients.map((ingredient) => ({
+const cloneForm = (source: RecipeFormType): RecipeFormType => ({
+  title: source.title,
+  description: source.description,
+  imageUrl: source.imageUrl,
+  categoryId: source.categoryId,
+  tagIds: [...source.tagIds],
+  ingredients: source.ingredients.map((ingredient) => ({
     ingredientId: ingredient.ingredientId,
     amount: ingredient.amount,
     unit: ingredient.unit,
   })),
 });
 
-const mapRecipeToForm = (recipe: Recipe): RecipeForm => ({
+const mapRecipeToForm = (recipe: Recipe): RecipeFormType => ({
   title: recipe.title,
   description: recipe.description,
   imageUrl: recipe.imageUrl || '',
-
   categoryId: recipe.category?.id || null,
-
   tagIds: recipe.tags.map((item) => item.tag.id),
-
   ingredients: recipe.ingredients.map((ingredient) => ({
     ingredientId: ingredient.ingredient.id,
-
     amount: ingredient.amount,
-
     unit: ingredient.unit,
   })),
 });
@@ -228,8 +135,6 @@ const loadRecipe = async () => {
 watch(
   () => props.modelValue,
   async (isOpen) => {
-    console.log('modelValue changed:', isOpen);
-
     if (isOpen) {
       await loadRecipe();
       return;
@@ -240,11 +145,7 @@ watch(
 );
 
 const startEdit = () => {
-  console.log('startEdit BEFORE:', isEditing.value);
-
   isEditing.value = true;
-
-  console.log('startEdit AFTER:', isEditing.value);
 };
 
 const cancelEdit = () => {
@@ -256,68 +157,20 @@ const cancelEdit = () => {
   isEditing.value = false;
 };
 
-const ingredientsMap = computed(
-  () => new Map(ingredients.value.map((ingredient) => [ingredient.id, ingredient])),
-);
-
-const getUnitById = (id: string | null): string => {
-  if (!id) {
-    return '';
-  }
-
-  return ingredientsMap.value.get(id)?.unit ?? '';
-};
-
-const getAmountLabelKey = (id: string | null) => {
-  switch (getUnitById(id)) {
-    case 'г':
-      return 'weight';
-
-    case 'мл':
-      return 'volume';
-
-    default:
-      return 'quantity';
-  }
-};
-
-const addIngredientRow = () => {
-  if (!form.value) {
-    return;
-  }
-
-  form.value.ingredients.push({
-    ingredientId: null,
-    amount: null,
-    unit: null,
-  });
-};
-
-const deleteIngredientRow = (index: number) => {
-  if (!form.value || form.value.ingredients.length === 1) {
-    return;
-  }
-
-  form.value.ingredients.splice(index, 1);
-};
-
 const buildPayload = (): UpdateRecipeDto => {
   if (!form.value) {
     throw new Error('Recipe form is not initialized');
   }
 
   return {
-    title: form.value.title,
+    title: form.value.title.trim(),
+    description: form.value.description.trim(),
 
-    description: form.value.description,
-
-    ...(form.value.imageUrl && {
-      imageUrl: form.value.imageUrl,
+    ...(form.value.imageUrl.trim() && {
+      imageUrl: form.value.imageUrl.trim(),
     }),
 
-    ...(form.value.categoryId && {
-      categoryId: form.value.categoryId,
-    }),
+    categoryId: form.value.categoryId as string,
 
     ...(form.value.tagIds.length && {
       tagIds: form.value.tagIds,
@@ -325,10 +178,8 @@ const buildPayload = (): UpdateRecipeDto => {
 
     ingredients: form.value.ingredients.map((ingredient) => ({
       ingredientId: ingredient.ingredientId as string,
-
       amount: ingredient.amount as number,
-
-      unit: getUnitById(ingredient.ingredientId),
+      unit: ingredient.unit ?? '',
     })),
   };
 };
@@ -338,13 +189,25 @@ const saveRecipe = async () => {
     return;
   }
 
-  const updatedRecipe = await updateRecipe(recipe.value.id, buildPayload());
+  const isValid = await formRef.value?.validate();
 
-  recipe.value = updatedRecipe;
-  form.value = mapRecipeToForm(updatedRecipe);
-  originalForm.value = cloneForm(form.value);
+  if (!isValid) {
+    return;
+  }
 
-  isEditing.value = false;
+  try {
+    const updatedRecipe = await updateRecipe(recipe.value.id, buildPayload());
+
+    recipe.value = updatedRecipe;
+    form.value = mapRecipeToForm(updatedRecipe);
+    originalForm.value = cloneForm(form.value);
+
+    isEditing.value = false;
+
+    emit('updated');
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const removeRecipe = async () => {
@@ -352,14 +215,14 @@ const removeRecipe = async () => {
     return;
   }
 
-  await deleteRecipe(recipe.value.id);
+  try {
+    await deleteRecipe(recipe.value.id);
 
-  closeDialog();
+    closeDialog();
+  } catch (error) {
+    console.error(error);
+  }
 };
-
-onMounted(async () => {
-  await Promise.all([fetchCategories(), fetchTags(), fetchIngredients()]);
-});
 </script>
 
 <style scoped lang="scss">
