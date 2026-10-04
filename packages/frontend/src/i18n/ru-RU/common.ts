@@ -4,5 +4,8 @@ export default {
     confirm: 'Подтвердить',
     cancel: 'Отменить',
     add: 'Добавить',
+    close: 'Закрыть',
+    edit: 'Редактировать',
+    delete: 'Удалить',
   },
 };
