@@ -103,21 +103,28 @@
 
       <q-card-actions align="right">
         <template v-if="!isEditing">
-          <q-btn flat color="negative" label="Удалить" @click="removeRecipe" />
+          <q-btn
+            flat
+            color="negative"
+            :label="t('common.delete')"
+            @click="deleteConfirmDialog = true"
+          />
 
-          <q-btn flat color="primary" label="Редактировать" @click="startEdit" />
+          <q-btn flat color="primary" :label="t('common.edit')" @click="startEdit" />
 
           <q-btn flat color="primary" :label="t('common.close')" @click="closeDialog" />
         </template>
 
         <template v-else>
-          <q-btn flat color="grey" label="Отменить" @click="cancelEdit" />
+          <q-btn flat color="grey" :label="t('common.cancel')" @click="cancelEdit" />
 
-          <q-btn flat color="positive" label="Сохранить" @click="saveRecipe" />
+          <q-btn flat color="positive" :label="t('common.save')" @click="saveRecipe" />
         </template>
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <RecipeDeleteConfirm v-model="deleteConfirmDialog" @confirm="removeRecipe" />
 </template>
 
 <script setup lang="ts">
@@ -127,6 +134,7 @@ import { useI18n } from 'vue-i18n';
 
 import { recipesInfoStore } from 'stores/recipes-info-store';
 import { useMetaStore } from 'stores/meta-store';
+import RecipeDeleteConfirm from '../recipes/RecipeDeleteConfirm.vue';
 import type { RecipeForm } from 'src/types';
 import type { Recipe, UpdateRecipeDto } from 'src/types/models';
 
@@ -163,6 +171,8 @@ const form = ref<RecipeForm | null>(null);
 const originalForm = ref<RecipeForm | null>(null);
 
 const isEditing = ref(false);
+
+const deleteConfirmDialog = ref(false);
 
 const closeDialog = () => {
   isEditing.value = false;
