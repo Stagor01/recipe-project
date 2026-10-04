@@ -63,6 +63,18 @@ export const recipesInfoStore = defineStore('recipes', () => {
     }
   };
 
+  const deleteRecipe = async (id: string) => {
+    loading.value = true;
+
+    try {
+      await recipeApi.delete(id);
+
+      recipes.value = recipes.value.filter((recipe) => recipe.id !== id);
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     recipes,
     loading,
@@ -72,5 +84,6 @@ export const recipesInfoStore = defineStore('recipes', () => {
 
     createRecipe,
     updateRecipe,
+    deleteRecipe,
   };
 });

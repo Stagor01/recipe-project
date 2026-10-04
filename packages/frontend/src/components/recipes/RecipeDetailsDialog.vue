@@ -1,5 +1,5 @@
 <template>
-  <q-dialog v-model="dialogModel" persistent>
+  <q-dialog v-model="dialogModel">
     <q-card v-if="form" class="dialog-recipe-details">
       <q-card-section class="row items-center q-pb-none">
         <div class="font-bold text-xl">
@@ -8,7 +8,7 @@
 
         <q-space />
 
-        <q-btn icon="close" flat round dense size="md" v-close-popup />
+        <q-btn icon="close" flat round dense size="md" @click="closeDialog" />
       </q-card-section>
 
       <q-card-section class="fields-container">
@@ -103,11 +103,11 @@
 
       <q-card-actions align="right">
         <template v-if="!isEditing">
-          <q-btn flat color="negative" label="Удалить" />
+          <q-btn flat color="negative" label="Удалить" @click="removeRecipe" />
 
           <q-btn flat color="primary" label="Редактировать" @click="startEdit" />
 
-          <q-btn flat color="primary" :label="t('common.close')" v-close-popup />
+          <q-btn flat color="primary" :label="t('common.close')" @click="closeDialog" />
         </template>
 
         <template v-else>
@@ -150,7 +150,7 @@ const { t } = useI18n();
 const recipesStore = recipesInfoStore();
 const metaStore = useMetaStore();
 
-const { fetchRecipe, updateRecipe } = recipesStore;
+const { fetchRecipe, updateRecipe, deleteRecipe } = recipesStore;
 
 const { categories, tags, ingredients } = storeToRefs(metaStore);
 
@@ -163,6 +163,24 @@ const form = ref<RecipeForm | null>(null);
 const originalForm = ref<RecipeForm | null>(null);
 
 const isEditing = ref(false);
+
+const closeDialog = () => {
+  isEditing.value = false;
+  dialogModel.value = false;
+};
+
+const cloneForm = (form: RecipeForm): RecipeForm => ({
+  title: form.title,
+  description: form.description,
+  imageUrl: form.imageUrl,
+  categoryId: form.categoryId,
+  tagIds: [...form.tagIds],
+  ingredients: form.ingredients.map((ingredient) => ({
+    ingredientId: ingredient.ingredientId,
+    amount: ingredient.amount,
+    unit: ingredient.unit,
+  })),
+});
 
 const mapRecipeToForm = (recipe: Recipe): RecipeForm => ({
   title: recipe.title,
@@ -182,35 +200,48 @@ const mapRecipeToForm = (recipe: Recipe): RecipeForm => ({
   })),
 });
 
+const loadRecipe = async () => {
+  if (!props.recipeId) {
+    return;
+  }
+
+  const data = await fetchRecipe(props.recipeId);
+
+  recipe.value = data;
+  form.value = mapRecipeToForm(data);
+  originalForm.value = cloneForm(form.value);
+
+  isEditing.value = false;
+};
+
 watch(
-  () => props.recipeId,
-  async (id) => {
-    if (!id) {
+  () => props.modelValue,
+  async (isOpen) => {
+    console.log('modelValue changed:', isOpen);
+
+    if (isOpen) {
+      await loadRecipe();
       return;
     }
 
-    const data = await fetchRecipe(id);
-
-    recipe.value = data;
-
-    form.value = mapRecipeToForm(data);
-
-    originalForm.value = structuredClone(form.value);
-
     isEditing.value = false;
-  },
-  {
-    immediate: true,
   },
 );
 
 const startEdit = () => {
+  console.log('startEdit BEFORE:', isEditing.value);
+
   isEditing.value = true;
+
+  console.log('startEdit AFTER:', isEditing.value);
 };
 
 const cancelEdit = () => {
-  form.value = structuredClone(originalForm.value);
+  if (!originalForm.value) {
+    return;
+  }
 
+  form.value = cloneForm(originalForm.value);
   isEditing.value = false;
 };
 
@@ -296,13 +327,23 @@ const saveRecipe = async () => {
     return;
   }
 
-  await updateRecipe(recipe.value.id, buildPayload());
+  const updatedRecipe = await updateRecipe(recipe.value.id, buildPayload());
 
-  originalForm.value = structuredClone(form.value);
+  recipe.value = updatedRecipe;
+  form.value = mapRecipeToForm(updatedRecipe);
+  originalForm.value = cloneForm(form.value);
 
   isEditing.value = false;
+};
 
-  emit('updated');
+const removeRecipe = async () => {
+  if (!recipe.value) {
+    return;
+  }
+
+  await deleteRecipe(recipe.value.id);
+
+  closeDialog();
 };
 
 onMounted(async () => {

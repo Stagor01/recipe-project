@@ -1,9 +1,16 @@
 <template>
-  <q-card class="cursor-pointer" @click="emit('click', recipe.id)">
-    <img :src="recipe.imageUrl || placeholderImage" />
+  <q-card>
+    <img
+      :src="recipe.imageUrl || placeholderImage"
+      class="recipe-image cursor-pointer transition ease-in-out hover:opacity-80"
+      @click="emit('click', recipe.id)"
+    />
 
     <q-card-section>
-      <div class="text-h6">
+      <div
+        class="text-h6 cursor-pointer transition ease-in-out hover:opacity-80"
+        @click="emit('click', recipe.id)"
+      >
         {{ recipe.title }}
       </div>
     </q-card-section>
@@ -59,3 +66,11 @@ const visibleTags = computed(() => props.recipe.tags.slice(0, TAG_LIMIT));
 
 const hiddenTags = computed(() => props.recipe.tags.slice(TAG_LIMIT));
 </script>
+
+<style lang="scss" scoped>
+.recipe-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+</style>

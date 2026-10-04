@@ -4,5 +4,8 @@ export default {
     confirm: 'Confirm',
     cancel: 'Cancel',
     add: 'Add',
+    close: 'Close',
+    edit: 'Edit',
+    delete: 'Delete',
   },
 };
