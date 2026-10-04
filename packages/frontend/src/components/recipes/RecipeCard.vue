@@ -17,7 +17,7 @@
 
     <q-separator />
 
-    <q-card-section v-if="recipe.category" class="q-pt-none">
+    <q-card-section v-if="recipe.category" class="pt-4">
       <q-chip :color="getRandomColor()">
         {{ recipe.category.name }}
       </q-chip>
@@ -30,8 +30,8 @@
 
       <q-chip v-if="hiddenTags.length" clickable color="grey-7" text-color="white">
         <q-menu anchor="bottom start" self="top start">
-          <q-list style="min-width: 150px">
-            <q-item v-for="t in hiddenTags" :key="t.tag.id" dense>
+          <q-list class="min-w-[150px]">
+            <q-item v-for="t in hiddenTags" :key="t.tag.id" dense class="py-2">
               <q-item-section>
                 {{ t.tag.name }}
               </q-item-section>

@@ -68,6 +68,7 @@
             option-value="id"
             emit-value
             map-options
+            use-input
             class="col"
             :disable="!isEditing"
             :label="t('recipePage.dialogs.addRecipe.labels.ingredient')"
