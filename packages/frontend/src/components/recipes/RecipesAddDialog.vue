@@ -11,119 +11,28 @@
         <q-btn icon="close" flat round dense size="md" v-close-popup />
       </q-card-section>
 
-      <q-card-section class="fields-container">
-        <q-input
-          v-model="imageUrl"
-          :label="t('recipePage.dialogs.addRecipe.labels.imageUrl')"
-          :placeholder="t('recipePage.dialogs.addRecipe.placeholders.imageUrl')"
-          clearable
-        />
+      <q-form @submit.prevent="onSubmit">
+        <RecipeForm v-model="form" />
 
-        <q-input
-          v-model="recipeTitle"
-          :label="t('recipePage.dialogs.addRecipe.labels.recipeTitle')"
-          :placeholder="t('recipePage.dialogs.addRecipe.placeholders.recipeTitle')"
-          clearable
-        />
+        <q-card-actions align="right">
+          <q-btn flat :label="t('common.cancel')" color="primary" v-close-popup />
 
-        <q-input
-          v-model="recipeDescription"
-          :label="t('recipePage.dialogs.addRecipe.labels.description')"
-          :placeholder="t('recipePage.dialogs.addRecipe.placeholders.description')"
-          type="textarea"
-        />
-
-        <q-select
-          v-model="selectedCategoryId"
-          :options="categories"
-          option-label="name"
-          option-value="id"
-          emit-value
-          map-options
-          clearable
-          :label="t('recipePage.dialogs.addRecipe.labels.category')"
-        />
-
-        <q-select
-          v-model="selectedTagIds"
-          :options="filteredTags"
-          option-label="name"
-          option-value="id"
-          emit-value
-          map-options
-          multiple
-          use-input
-          clearable
-          :label="t('recipePage.dialogs.addRecipe.labels.tags')"
-          @filter="filterTag"
-        />
-
-        <div
-          v-for="(item, index) in ingredientsForm"
-          :key="index"
-          class="ingredient-fields row items-center q-gutter-sm q-mb-sm"
-        >
-          <q-select
-            v-model="item.ingredientId"
-            :options="filteredIngredients"
-            option-label="name"
-            option-value="id"
-            emit-value
-            map-options
-            use-input
-            fill-input
-            hide-selected
-            clearable
-            class="col"
-            :label="t('recipePage.dialogs.addRecipe.labels.ingredient')"
-            @filter="filterIngredient"
-          />
-
-          <q-input
-            v-model.number="item.amount"
-            type="number"
-            class="col-2"
-            :label="
-              t(`recipePage.dialogs.addRecipe.labels.${getAmountLabelKey(item.ingredientId)}`)
-            "
-          />
-
-          <span class="col-1 text-grey">
-            {{ getUnitById(item.ingredientId) }}
-          </span>
-
-          <q-btn icon="add" flat round @click="addIngredientRow" />
-
-          <q-btn
-            icon="delete"
-            flat
-            round
-            :disable="ingredientsForm.length === 1"
-            @click="deleteIngredientRow(index)"
-          />
-        </div>
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat :label="t('common.cancel')" color="primary" v-close-popup />
-
-        <q-btn flat :label="t('common.add')" color="primary" @click="onSubmit" />
-      </q-card-actions>
+          <q-btn type="submit" flat :label="t('common.add')" color="primary" />
+        </q-card-actions>
+      </q-form>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { recipesInfoStore } from 'stores/recipes-info-store';
-import { useMetaStore } from 'stores/meta-store';
+import RecipeForm from './RecipeForm.vue';
 
-import type { CreateRecipeDto, Ingredient, Tag } from 'src/types/models';
-
-import type { IngredientFormItem } from 'src/types';
+import type { CreateRecipeDto } from 'src/types/models';
+import type { RecipeForm as RecipeFormType } from 'src/types';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -139,156 +48,59 @@ const dialogModel = computed({
   set: (value: boolean) => emit('update:modelValue', value),
 });
 
+const { t } = useI18n();
+
 const recipesStore = recipesInfoStore();
-const metaStore = useMetaStore();
 
 const { createRecipe } = recipesStore;
 
-const { categories, tags, ingredients } = storeToRefs(metaStore);
-
-const { fetchCategories, fetchTags, fetchIngredients } = metaStore;
-
-const { t } = useI18n();
-
-const imageUrl = ref('');
-const recipeTitle = ref('');
-const recipeDescription = ref('');
-
-const selectedCategoryId = ref<string | null>(null);
-const selectedTagIds = ref<string[]>([]);
-
-const filteredTags = ref<Tag[]>([]);
-const filteredIngredients = ref<Ingredient[]>([]);
-
-const ingredientsForm = ref<IngredientFormItem[]>([
-  {
-    ingredientId: null,
-    amount: null,
-    unit: null,
-  },
-]);
-
-const filterTag = (val: string, update: (fn: () => void) => void) => {
-  update(() => {
-    if (!val) {
-      filteredTags.value = tags.value;
-      return;
-    }
-
-    const needle = val.toLowerCase();
-
-    filteredTags.value = tags.value.filter((tag) => tag.name.toLowerCase().includes(needle));
-  });
-};
-
-const filterIngredient = (val: string, update: (fn: () => void) => void) => {
-  update(() => {
-    if (!val) {
-      filteredIngredients.value = ingredients.value;
-      return;
-    }
-
-    const needle = val.toLowerCase();
-
-    filteredIngredients.value = ingredients.value.filter((i) =>
-      i.name.toLowerCase().includes(needle),
-    );
-  });
-};
-
-const addIngredientRow = () => {
-  ingredientsForm.value.push({
-    ingredientId: null,
-    amount: null,
-    unit: null,
-  });
-};
-
-const deleteIngredientRow = (index: number) => {
-  if (ingredientsForm.value.length === 1) {
-    return;
-  }
-
-  ingredientsForm.value.splice(index, 1);
-};
-
-const getUnitById = (id: string | null) => {
-  if (!id) {
-    return '';
-  }
-
-  const ingredient = ingredients.value.find((i) => i.id === id);
-
-  return ingredient?.unit || '';
-};
-
-const getAmountLabelKey = (id: string | null) => {
-  if (!id) {
-    return 'quantity';
-  }
-
-  switch (getUnitById(id)) {
-    case 'г':
-      return 'weight';
-
-    case 'мл':
-      return 'volume';
-
-    default:
-      return 'quantity';
-  }
-};
-
-const buildPayload = (): CreateRecipeDto => ({
-  title: recipeTitle.value,
-  description: recipeDescription.value,
-
-  ...(imageUrl.value && {
-    imageUrl: imageUrl.value,
-  }),
-
-  ...(selectedCategoryId.value && {
-    categoryId: selectedCategoryId.value,
-  }),
-
-  ...(selectedTagIds.value.length && {
-    tagIds: selectedTagIds.value,
-  }),
-
-  ingredients: ingredientsForm.value
-    .filter((item) => item.ingredientId && item.amount)
-    .map((item) => ({
-      ingredientId: item.ingredientId as string,
-      amount: item.amount as number,
-      unit: getUnitById(item.ingredientId),
-    })),
-});
-
-const resetForm = () => {
-  imageUrl.value = '';
-  recipeTitle.value = '';
-  recipeDescription.value = '';
-
-  selectedCategoryId.value = null;
-  selectedTagIds.value = [];
-
-  ingredientsForm.value = [
+const createEmptyForm = (): RecipeFormType => ({
+  title: '',
+  description: '',
+  imageUrl: '',
+  categoryId: null,
+  tagIds: [],
+  ingredients: [
     {
       ingredientId: null,
       amount: null,
       unit: null,
     },
-  ];
+  ],
+});
+
+const form = ref<RecipeFormType>(createEmptyForm());
+
+const buildPayload = (): CreateRecipeDto => ({
+  title: form.value.title.trim(),
+  description: form.value.description.trim(),
+
+  ...(form.value.imageUrl.trim() && {
+    imageUrl: form.value.imageUrl.trim(),
+  }),
+
+  categoryId: form.value.categoryId as string,
+
+  ...(form.value.tagIds.length && {
+    tagIds: form.value.tagIds,
+  }),
+
+  ingredients: form.value.ingredients.map((ingredient) => ({
+    ingredientId: ingredient.ingredientId as string,
+    amount: ingredient.amount as number,
+    unit: ingredient.unit ?? '',
+  })),
+});
+
+const resetForm = () => {
+  form.value = createEmptyForm();
 };
 
 const onSubmit = async () => {
   try {
-    const payload = buildPayload();
-
-    await createRecipe(payload);
+    await createRecipe(buildPayload());
 
     resetForm();
-
     dialogModel.value = false;
 
     emit('created');
@@ -296,15 +108,6 @@ const onSubmit = async () => {
     console.error(error);
   }
 };
-
-onMounted(async () => {
-  await fetchCategories();
-  await fetchTags();
-  await fetchIngredients();
-
-  filteredTags.value = tags.value;
-  filteredIngredients.value = ingredients.value;
-});
 </script>
 
 <style scoped lang="scss">
