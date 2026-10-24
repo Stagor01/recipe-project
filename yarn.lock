@@ -3225,6 +3225,11 @@ lru-cache@^10.2.0:
   resolved "https://registry.npmjs.org/lru-cache/-/lru-cache-10.4.3.tgz#410fc8a17b70e598013df257c2446b7f3383f119"
   integrity sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==
 
+lucide-vue-next@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/lucide-vue-next/-/lucide-vue-next-1.0.0.tgz#663ad26b7bfa327c7662b75bb0b843ebe749a31b"
+  integrity sha512-V6SPvx1IHTj/UY+FrIYWV5faISsPSb8BnWSFDxAtezWKvWc9ZZ40PDrdu1/Qb5vg4lHWr1hs1BAMGVGm6V1Xdg==
+
 magic-string@^0.30.17, magic-string@^0.30.19:
   version "0.30.19"
   resolved "https://registry.npmjs.org/magic-string/-/magic-string-0.30.19.tgz#cebe9f104e565602e5d2098c5f2e79a77cc86da9"
