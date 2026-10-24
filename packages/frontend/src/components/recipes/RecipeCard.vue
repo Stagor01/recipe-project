@@ -1,10 +1,11 @@
 <template>
   <q-card>
-    <img
-      :src="recipe.imageUrl || placeholderImage"
-      class="recipe-image cursor-pointer transition ease-in-out hover:opacity-80"
+    <div
+      class="flex justify-center p-2 cursor-pointer transition ease-in-out hover:opacity-80"
       @click="emit('click', recipe.id)"
-    />
+    >
+      <Soup :size="150" />
+    </div>
 
     <q-card-section>
       <div
@@ -48,6 +49,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { chipColors, TAG_LIMIT } from 'src/consts';
+import { Soup } from 'lucide-vue-next';
 import type { Recipe } from 'src/types/models';
 
 const props = defineProps<{
@@ -58,19 +60,9 @@ const emit = defineEmits<{
   (e: 'click', recipeId: string): void;
 }>();
 
-const placeholderImage = 'https://via.placeholder.com/400x200.png?text=No+Image';
-
 const getRandomColor = () => chipColors[Math.floor(Math.random() * chipColors.length)];
 
 const visibleTags = computed(() => props.recipe.tags.slice(0, TAG_LIMIT));
 
 const hiddenTags = computed(() => props.recipe.tags.slice(TAG_LIMIT));
 </script>
-
-<style lang="scss" scoped>
-.recipe-image {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-}
-</style>
